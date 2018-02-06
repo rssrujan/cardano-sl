@@ -31,13 +31,17 @@ import           Pos.Crypto.Signing.Types.Signing (PublicKey (..), SecretKey (..
 data EncryptedSecretKey = EncryptedSecretKey
     { eskPayload :: !CC.XPrv          -- ^ Secret key itself, encrypted with passphrase.
     , eskHash    :: !S.EncryptedPass  -- ^ Hash of passphrase used for key creation.
-    }
+    } deriving Eq
 
 instance Show EncryptedSecretKey where
     show _ = "<encrypted key>"
 
 instance B.Buildable EncryptedSecretKey where
     build _ = "<encrypted key>"
+
+-- | todo: add deriving Eq to XPrv definition in Cardano.Crypto.Wallet
+--   todo: add deriving Eq to EncryptedKey definition in Cardano.Crypto.Wallet.Encrypted
+deriving instance Eq CC.XPrv
 
 newtype PassPhrase = PassPhrase ScrubbedBytes
     deriving (Eq, Ord, Monoid, NFData, ByteArray, ByteArrayAccess)
