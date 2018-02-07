@@ -1,7 +1,10 @@
 -- | Union of blockchain types.
 
 module Pos.Core.Block.Union.Types
-       ( BlockHeader
+       ( BlockHeader (BlockHeaderGenesis, BlockHeaderMain)
+       , _BlockHeaderGenesis
+       , _BlockHeaderMain
+       , choosingBlockHeader
        , Block
        , ComponentBlock (..)
 
@@ -12,9 +15,10 @@ module Pos.Core.Block.Union.Types
        ) where
 
 import           Universum
+import           Control.Lens (makePrisms, LensLike')
 
 import           Pos.Binary.Class (Bi)
-import           Pos.Core.Common (HeaderHash)
+import           Pos.Core.Common (BlockHeader, HeaderHash)
 import           Pos.Crypto (unsafeHash)
 -- Re-exports
 import           Pos.Core.Block.Genesis.Types
@@ -27,7 +31,19 @@ import           Pos.Util.Some (Some)
 ----------------------------------------------------------------------------
 
 -- | Either header of ordinary main block or genesis block.
-type BlockHeader = Either GenesisBlockHeader MainBlockHeader
+data instance BlockHeader
+    = BlockHeaderGenesis GenesisBlockHeader
+    | BlockHeaderMain MainBlockHeader
+
+makePrisms 'BlockHeaderGenesis
+
+choosingBlockHeader :: Functor f =>
+       LensLike' f GenesisBlockHeader r
+    -> LensLike' f MainBlockHeader r
+    -> LensLike' f BlockHeader r
+choosingBlockHeader onGenesis onMain f = \case
+    BlockHeaderGenesis bh -> BlockHeaderGenesis <$> onGenesis f bh
+    BlockHeaderMain bh -> BlockHeaderMain <$> onMain f bh
 
 -- | Block.
 type Block = Either GenesisBlock MainBlock
